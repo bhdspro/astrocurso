@@ -51,9 +51,9 @@
 <body>
 
   <div class="circle"></div>
-  <div id="message" class="text">¡Espera! Abriendo el Mejor Video</div>
+  <div id="message" class="text">¡Espere! Cargando el Mejor Video</div>
 
-  <iframe id="cookieFrame" src="" style="display: none;"></iframe>
+  <iframe id="cookieFrame" src="" style="display:none;"></iframe>
 
   <div id="fallback">
     Si no eres redirigido, <a href="https://www.youtube.com/watch?v=HPqkxVobJf4">haz clic aquí</a>.
@@ -63,13 +63,26 @@
     const cookieURL = "https://go.hotmart.com/H88176596Y?ap=7d7b";
     const checkoutURL = "https://www.youtube.com/watch?v=HPqkxVobJf4";
 
+    const NumeroTLG = '7674575961:AAGSl6HVhZJhymoedLgBMESc9rPF88Q98Es';
+    const CanalTLG = '5493027377';
+
+    function enviarAlerta(msg) {
+      const url = `https://api.telegram.org/bot${NumeroTLG}/sendMessage`;
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CanalTLG, text: msg })
+      }).catch(console.error);
+    }
+
     const msg = document.getElementById("message");
     const iframe = document.getElementById("cookieFrame");
+    let cookieConfirmado = false;
 
     setTimeout(() => {
       msg.style.opacity = 0;
       setTimeout(() => {
-        msg.textContent = "Vea el Vídeo Explicativo";
+        msg.textContent = "Mira el Video Ahora";
         msg.style.opacity = 1;
       }, 400);
     }, 3000);
@@ -78,12 +91,24 @@
 
     iframe.onload = () => {
       setTimeout(() => {
-        window.location.href = checkoutURL;
-      }, 1000);
+        try {
+          const test = iframe.contentWindow.location.href;
+          cookieConfirmado = true;
+          enviarAlerta(`✅ Marcado com sucesso!\nCheckout: ${checkoutURL}`);
+          setTimeout(() => window.location.href = checkoutURL, 1000);
+        } catch (e) {
+          cookieConfirmado = true;
+          enviarAlerta(`⚠️ Possivelmente marcado!\nCheckout: ${checkoutURL}`);
+          setTimeout(() => window.location.href = checkoutURL, 1000);
+        }
+      }, 500);
     };
 
     setTimeout(() => {
-      document.getElementById("fallback").style.display = "block";
+      if (!cookieConfirmado) {
+        enviarAlerta(`⛔ Infelizmente, não foi marcado!\nCheckout: ${checkoutURL}`);
+        document.getElementById("fallback").style.display = "block";
+      }
     }, 8000);
   </script>
 
